@@ -12,6 +12,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 
+import 'callbacks.dart';
 import 'com/combase.dart';
 import 'structs.dart';
 
@@ -105,10 +106,10 @@ int BringWindowToTop(int hWnd) {
 /// );
 /// ```
 /// {@category user32}
-int ChildWindowFromPoint(int hWndParent, int Point) {
+int ChildWindowFromPoint(int hWndParent, POINT Point) {
   final _ChildWindowFromPoint = _user32.lookupFunction<
-      IntPtr Function(IntPtr hWndParent, Int64 Point),
-      int Function(int hWndParent, int Point)>('ChildWindowFromPoint');
+      IntPtr Function(IntPtr hWndParent, POINT Point),
+      int Function(int hWndParent, POINT Point)>('ChildWindowFromPoint');
   return _ChildWindowFromPoint(hWndParent, Point);
 }
 
@@ -118,19 +119,18 @@ int ChildWindowFromPoint(int hWndParent, int Point) {
 /// Grandchildren and deeper descendants are not searched.
 ///
 /// ```c
-/// HWND ChildWindowFromPoint(
-///   HWND  hWndParent,
-///   POINT Point
+/// HWND ChildWindowFromPointEx(
+///   HWND  hwnd,
+///   POINT pt,
 ///   UINT  flags
 /// );
 /// ```
 /// {@category user32}
-int ChildWindowFromPointEx(int hWndParent, int Point, int flags) {
+int ChildWindowFromPointEx(int hwnd, POINT pt, int flags) {
   final _ChildWindowFromPointEx = _user32.lookupFunction<
-      IntPtr Function(IntPtr hWndParent, Int64 Point, Uint32 flags),
-      int Function(
-          int hWndParent, int Point, int flags)>('ChildWindowFromPointEx');
-  return _ChildWindowFromPointEx(hWndParent, Point, flags);
+      IntPtr Function(IntPtr hwnd, POINT pt, Uint32 flags),
+      int Function(int hwnd, POINT pt, int flags)>('ChildWindowFromPointEx');
+  return _ChildWindowFromPointEx(hwnd, pt, flags);
 }
 
 /// The ClientToScreen function converts the client-area coordinates of a
@@ -208,10 +208,11 @@ int CopyRect(Pointer<RECT> lprcDst, Pointer<RECT> lprcSrc) {
 /// );
 /// ```
 /// {@category user32}
-int CreateAcceleratorTable(Pointer paccel, int cAccel) {
+int CreateAcceleratorTable(Pointer<ACCEL> paccel, int cAccel) {
   final _CreateAcceleratorTable = _user32.lookupFunction<
-      IntPtr Function(Pointer paccel, Int32 cAccel),
-      int Function(Pointer paccel, int cAccel)>('CreateAcceleratorTableW');
+      IntPtr Function(Pointer<ACCEL> paccel, Int32 cAccel),
+      int Function(
+          Pointer<ACCEL> paccel, int cAccel)>('CreateAcceleratorTableW');
   return _CreateAcceleratorTable(paccel, cAccel);
 }
 
@@ -231,20 +232,24 @@ int CreateAcceleratorTable(Pointer paccel, int cAccel) {
 /// );
 /// ```
 /// {@category user32}
-int CreateDialogIndirectParam(int hInstance, Pointer<DLGTEMPLATE> lpTemplate,
-    int hWndParent, Pointer<NativeFunction> lpDialogFunc, int dwInitParam) {
+int CreateDialogIndirectParam(
+    int hInstance,
+    Pointer<DLGTEMPLATE> lpTemplate,
+    int hWndParent,
+    Pointer<NativeFunction<DlgProc>> lpDialogFunc,
+    int dwInitParam) {
   final _CreateDialogIndirectParam = _user32.lookupFunction<
       IntPtr Function(
           IntPtr hInstance,
           Pointer<DLGTEMPLATE> lpTemplate,
           IntPtr hWndParent,
-          Pointer<NativeFunction> lpDialogFunc,
+          Pointer<NativeFunction<DlgProc>> lpDialogFunc,
           IntPtr dwInitParam),
       int Function(
           int hInstance,
           Pointer<DLGTEMPLATE> lpTemplate,
           int hWndParent,
-          Pointer<NativeFunction> lpDialogFunc,
+          Pointer<NativeFunction<DlgProc>> lpDialogFunc,
           int dwInitParam)>('CreateDialogIndirectParamW');
   return _CreateDialogIndirectParam(
       hInstance, lpTemplate, hWndParent, lpDialogFunc, dwInitParam);
@@ -298,9 +303,9 @@ int CreateWindowEx(
     int hWndParent,
     int hMenu,
     int hInstance,
-    Pointer<Void> lpParam) {
+    Pointer lpParam) {
   final _CreateWindowEx = _user32.lookupFunction<
-      Int32 Function(
+      IntPtr Function(
           Uint32 dwExStyle,
           Pointer<Utf16> lpClassName,
           Pointer<Utf16> lpWindowName,
@@ -312,7 +317,7 @@ int CreateWindowEx(
           IntPtr hWndParent,
           IntPtr hMenu,
           IntPtr hInstance,
-          Pointer<Void> lpParam),
+          Pointer lpParam),
       int Function(
           int dwExStyle,
           Pointer<Utf16> lpClassName,
@@ -325,7 +330,7 @@ int CreateWindowEx(
           int hWndParent,
           int hMenu,
           int hInstance,
-          Pointer<Void> lpParam)>('CreateWindowExW');
+          Pointer lpParam)>('CreateWindowExW');
   return _CreateWindowEx(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y,
       nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 }
@@ -336,7 +341,7 @@ int CreateWindowEx(
 /// the same parameters received by the window procedure.
 ///
 /// ```c
-/// LRESULT LRESULT DefWindowProcW(
+/// LRESULT DefWindowProcW(
 ///   HWND   hWnd,
 ///   UINT   Msg,
 ///   WPARAM wParam,
@@ -398,23 +403,27 @@ int DestroyWindow(int hWnd) {
 ///   HWND            hWndParent,
 ///   DLGPROC         lpDialogFunc,
 ///   LPARAM          dwInitParam
-/// )
+/// );
 /// ```
 /// {@category user32}
-int DialogBoxIndirectParam(int hInstance, Pointer<DLGTEMPLATE> hDialogTemplate,
-    int hWndParent, Pointer<NativeFunction> lpDialogFunc, int dwInitParam) {
+int DialogBoxIndirectParam(
+    int hInstance,
+    Pointer<DLGTEMPLATE> hDialogTemplate,
+    int hWndParent,
+    Pointer<NativeFunction<DlgProc>> lpDialogFunc,
+    int dwInitParam) {
   final _DialogBoxIndirectParam = _user32.lookupFunction<
       IntPtr Function(
           IntPtr hInstance,
           Pointer<DLGTEMPLATE> hDialogTemplate,
           IntPtr hWndParent,
-          Pointer<NativeFunction> lpDialogFunc,
+          Pointer<NativeFunction<DlgProc>> lpDialogFunc,
           IntPtr dwInitParam),
       int Function(
           int hInstance,
           Pointer<DLGTEMPLATE> hDialogTemplate,
           int hWndParent,
-          Pointer<NativeFunction> lpDialogFunc,
+          Pointer<NativeFunction<DlgProc>> lpDialogFunc,
           int dwInitParam)>('DialogBoxIndirectParamW');
   return _DialogBoxIndirectParam(
       hInstance, hDialogTemplate, hWndParent, lpDialogFunc, dwInitParam);
@@ -424,7 +433,7 @@ int DialogBoxIndirectParam(int hInstance, Pointer<DLGTEMPLATE> hDialogTemplate,
 /// dispatch a message retrieved by the GetMessage function.
 ///
 /// ```c
-/// LRESULT DispatchMessage(
+/// LRESULT DispatchMessageW(
 ///   const MSG *lpMsg
 /// );
 /// ```
@@ -594,12 +603,14 @@ int EndPaint(int hWnd, Pointer<PAINTSTRUCT> lpPaint) {
 /// );
 /// ```
 /// {@category user32}
-int EnumChildWindows(
-    int hWndParent, Pointer<NativeFunction> lpEnumFunc, int lParam) {
+int EnumChildWindows(int hWndParent,
+    Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc, int lParam) {
   final _EnumChildWindows = _user32.lookupFunction<
-      Int32 Function(
-          IntPtr hWndParent, Pointer<NativeFunction> lpEnumFunc, IntPtr lParam),
-      int Function(int hWndParent, Pointer<NativeFunction> lpEnumFunc,
+      Int32 Function(IntPtr hWndParent,
+          Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc, IntPtr lParam),
+      int Function(
+          int hWndParent,
+          Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc,
           int lParam)>('EnumChildWindows');
   return _EnumChildWindows(hWndParent, lpEnumFunc, lParam);
 }
@@ -621,12 +632,15 @@ int EnumChildWindows(
 /// );
 /// ```
 /// {@category user32}
-int EnumDisplayMonitors(
-    int hdc, Pointer lprcClip, Pointer<NativeFunction> lpfnEnum, int dwData) {
+int EnumDisplayMonitors(int hdc, Pointer<RECT> lprcClip,
+    Pointer<NativeFunction<MonitorEnumProc>> lpfnEnum, int dwData) {
   final _EnumDisplayMonitors = _user32.lookupFunction<
-      Int32 Function(IntPtr hdc, Pointer lprcClip,
-          Pointer<NativeFunction> lpfnEnum, IntPtr dwData),
-      int Function(int hdc, Pointer lprcClip, Pointer<NativeFunction> lpfnEnum,
+      Int32 Function(IntPtr hdc, Pointer<RECT> lprcClip,
+          Pointer<NativeFunction<MonitorEnumProc>> lpfnEnum, IntPtr dwData),
+      int Function(
+          int hdc,
+          Pointer<RECT> lprcClip,
+          Pointer<NativeFunction<MonitorEnumProc>> lpfnEnum,
           int dwData)>('EnumDisplayMonitors');
   return _EnumDisplayMonitors(hdc, lprcClip, lpfnEnum, dwData);
 }
@@ -643,11 +657,13 @@ int EnumDisplayMonitors(
 /// );
 /// ```
 /// {@category user32}
-int EnumWindows(Pointer<NativeFunction> lpEnumFunc, int lParam) {
+int EnumWindows(
+    Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc, int lParam) {
   final _EnumWindows = _user32.lookupFunction<
-      Int32 Function(Pointer<NativeFunction> lpEnumFunc, IntPtr lParam),
-      int Function(
-          Pointer<NativeFunction> lpEnumFunc, int lParam)>('EnumWindows');
+      Int32 Function(
+          Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc, IntPtr lParam),
+      int Function(Pointer<NativeFunction<EnumWindowsProc>> lpEnumFunc,
+          int lParam)>('EnumWindows');
   return _EnumWindows(lpEnumFunc, lParam);
 }
 
@@ -762,11 +778,11 @@ int FrameRect(int hDC, Pointer<RECT> lprc, int hbr) {
 /// );
 /// ```
 /// {@category user32}
-int GetClientRect(int hwnd, Pointer<RECT> lpRect) {
+int GetClientRect(int hWnd, Pointer<RECT> lpRect) {
   final _GetClientRect = _user32.lookupFunction<
-      Int32 Function(IntPtr hwnd, Pointer<RECT> lpRect),
-      int Function(int hwnd, Pointer<RECT> lpRect)>('GetClientRect');
-  return _GetClientRect(hwnd, lpRect);
+      Int32 Function(IntPtr hWnd, Pointer<RECT> lpRect),
+      int Function(int hWnd, Pointer<RECT> lpRect)>('GetClientRect');
+  return _GetClientRect(hWnd, lpRect);
 }
 
 /// Retrieves a handle to the current cursor.
@@ -808,10 +824,10 @@ int GetCursorPos(Pointer<POINT> lpPoint) {
 /// );
 /// ```
 /// {@category user32}
-int GetDC(int hwnd) {
-  final _GetDC = _user32.lookupFunction<IntPtr Function(IntPtr hwnd),
-      int Function(int hwnd)>('GetDC');
-  return _GetDC(hwnd);
+int GetDC(int hWnd) {
+  final _GetDC = _user32.lookupFunction<IntPtr Function(IntPtr hWnd),
+      int Function(int hWnd)>('GetDC');
+  return _GetDC(hWnd);
 }
 
 /// The GetDCEx function retrieves a handle to a device context (DC) for
@@ -920,7 +936,7 @@ int GetDlgItemText(
 /// {@category user32}
 int GetDpiForSystem() {
   final _GetDpiForSystem = _user32
-      .lookupFunction<Int32 Function(), int Function()>('GetDpiForSystem');
+      .lookupFunction<Uint32 Function(), int Function()>('GetDpiForSystem');
   return _GetDpiForSystem();
 }
 
@@ -933,7 +949,7 @@ int GetDpiForSystem() {
 /// ```
 /// {@category user32}
 int GetDpiForWindow(int hwnd) {
-  final _GetDpiForWindow = _user32.lookupFunction<Int32 Function(IntPtr hwnd),
+  final _GetDpiForWindow = _user32.lookupFunction<Uint32 Function(IntPtr hwnd),
       int Function(int hwnd)>('GetDpiForWindow');
   return _GetDpiForWindow(hwnd);
 }
@@ -1191,18 +1207,18 @@ int GetSystemMetricsForDpi(int nIndex, int dpi) {
 /// ```
 /// {@category user32}
 int GetTabbedTextExtent(int hdc, Pointer<Utf16> lpString, int chCount,
-    int nTabPosition, Pointer<Int32> lpnTabStopPositions) {
+    int nTabPositions, Pointer<Int32> lpnTabStopPositions) {
   final _GetTabbedTextExtent = _user32.lookupFunction<
       Uint32 Function(IntPtr hdc, Pointer<Utf16> lpString, Int32 chCount,
-          Int32 nTabPosition, Pointer<Int32> lpnTabStopPositions),
+          Int32 nTabPositions, Pointer<Int32> lpnTabStopPositions),
       int Function(
           int hdc,
           Pointer<Utf16> lpString,
           int chCount,
-          int nTabPosition,
+          int nTabPositions,
           Pointer<Int32> lpnTabStopPositions)>('GetTabbedTextExtentW');
   return _GetTabbedTextExtent(
-      hdc, lpString, chCount, nTabPosition, lpnTabStopPositions);
+      hdc, lpString, chCount, nTabPositions, lpnTabStopPositions);
 }
 
 /// The GetUpdateRect function retrieves the coordinates of the smallest
@@ -1374,16 +1390,24 @@ int GetWindowText(int hWnd, Pointer<Utf16> lpString, int nMaxCount) {
 ///   int            Y,
 ///   int            nWidth,
 ///   int            nHeight
-/// )
+/// );
 /// ```
 /// {@category user32}
-int GrayString(int hDC, int hBrush, Pointer<NativeFunction> lpOutputFunc,
-    int lpData, int nCount, int X, int Y, int nWidth, int nHeight) {
+int GrayString(
+    int hDC,
+    int hBrush,
+    Pointer<NativeFunction<OutputProc>> lpOutputFunc,
+    int lpData,
+    int nCount,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight) {
   final _GrayString = _user32.lookupFunction<
       Int32 Function(
           IntPtr hDC,
           IntPtr hBrush,
-          Pointer<NativeFunction> lpOutputFunc,
+          Pointer<NativeFunction<OutputProc>> lpOutputFunc,
           IntPtr lpData,
           Int32 nCount,
           Int32 X,
@@ -1393,7 +1417,7 @@ int GrayString(int hDC, int hBrush, Pointer<NativeFunction> lpOutputFunc,
       int Function(
           int hDC,
           int hBrush,
-          Pointer<NativeFunction> lpOutputFunc,
+          Pointer<NativeFunction<OutputProc>> lpOutputFunc,
           int lpData,
           int nCount,
           int X,
@@ -1621,6 +1645,9 @@ int LoadCursor(int hInstance, Pointer<Utf16> lpCursorName) {
   return _LoadCursor(hInstance, lpCursorName);
 }
 
+/// Loads the specified icon resource from the executable (.exe) file
+/// associated with an application instance.
+///
 /// ```c
 /// HICON LoadIconW(
 ///   HINSTANCE hInstance,
@@ -1780,10 +1807,10 @@ int MessageBox(
 /// );
 /// ```
 /// {@category user32}
-int MonitorFromPoint(int pt, int dwFlags) {
+int MonitorFromPoint(POINT pt, int dwFlags) {
   final _MonitorFromPoint = _user32.lookupFunction<
-      IntPtr Function(Int64 pt, Uint32 dwFlags),
-      int Function(int pt, int dwFlags)>('MonitorFromPoint');
+      IntPtr Function(POINT pt, Uint32 dwFlags),
+      int Function(POINT pt, int dwFlags)>('MonitorFromPoint');
   return _MonitorFromPoint(pt, dwFlags);
 }
 
@@ -2030,10 +2057,10 @@ void PostQuitMessage(int nExitCode) {
 /// );
 /// ```
 /// {@category user32}
-int PtInRect(Pointer<RECT> lprc, int pt) {
+int PtInRect(Pointer<RECT> lprc, POINT pt) {
   final _PtInRect = _user32.lookupFunction<
-      Int32 Function(Pointer<RECT> lprc, Int64 pt),
-      int Function(Pointer<RECT> lprc, int pt)>('PtInRect');
+      Int32 Function(Pointer<RECT> lprc, POINT pt),
+      int Function(Pointer<RECT> lprc, POINT pt)>('PtInRect');
   return _PtInRect(lprc, pt);
 }
 
@@ -2070,7 +2097,7 @@ int RedrawWindow(
 /// {@category user32}
 int RegisterClass(Pointer<WNDCLASS> lpWndClass) {
   final _RegisterClass = _user32.lookupFunction<
-      Int16 Function(Pointer<WNDCLASS> lpWndClass),
+      Uint16 Function(Pointer<WNDCLASS> lpWndClass),
       int Function(Pointer<WNDCLASS> lpWndClass)>('RegisterClassW');
   return _RegisterClass(lpWndClass);
 }
@@ -2211,7 +2238,7 @@ int SendInput(int cInputs, Pointer<INPUT> pInputs, int cbSize) {
 /// not return until the window procedure has processed the message.
 ///
 /// ```c
-/// LRESULT SendMessage(
+/// LRESULT SendMessageW(
 ///   HWND   hWnd,
 ///   UINT   Msg,
 ///   WPARAM wParam,
@@ -2321,16 +2348,16 @@ int SetForegroundWindow(int hWnd) {
 ///
 /// ```c
 /// BOOL SetMenuInfo(
-///   HMENU       ,
-///   LPCMENUINFO
+///   HMENU       hmenu,
+///   LPCMENUINFO lpmi
 /// );
 /// ```
 /// {@category user32}
-int SetMenuInfo(int hMenu, Pointer<MENUINFO> lpMenuInfo) {
+int SetMenuInfo(int hmenu, Pointer<MENUINFO> lpmi) {
   final _SetMenuInfo = _user32.lookupFunction<
-      Int32 Function(IntPtr hMenu, Pointer<MENUINFO> lpMenuInfo),
-      int Function(int hMenu, Pointer<MENUINFO> lpMenuInfo)>('SetMenuInfo');
-  return _SetMenuInfo(hMenu, lpMenuInfo);
+      Int32 Function(IntPtr hmenu, Pointer<MENUINFO> lpmi),
+      int Function(int hmenu, Pointer<MENUINFO> lpmi)>('SetMenuInfo');
+  return _SetMenuInfo(hmenu, lpmi);
 }
 
 /// Changes information about a menu item.
@@ -2455,13 +2482,13 @@ int SetScrollInfo(int hwnd, int nBar, Pointer<SCROLLINFO> lpsi, int redraw) {
 /// );
 /// ```
 /// {@category user32}
-int SetTimer(
-    int hWnd, int nIDEvent, int uElapse, Pointer<NativeFunction> lpTimerFunc) {
+int SetTimer(int hWnd, int nIDEvent, int uElapse,
+    Pointer<NativeFunction<TimerProc>> lpTimerFunc) {
   final _SetTimer = _user32.lookupFunction<
       IntPtr Function(IntPtr hWnd, IntPtr nIDEvent, Uint32 uElapse,
-          Pointer<NativeFunction> lpTimerFunc),
+          Pointer<NativeFunction<TimerProc>> lpTimerFunc),
       int Function(int hWnd, int nIDEvent, int uElapse,
-          Pointer<NativeFunction> lpTimerFunc)>('SetTimer');
+          Pointer<NativeFunction<TimerProc>> lpTimerFunc)>('SetTimer');
   return _SetTimer(hWnd, nIDEvent, uElapse, lpTimerFunc);
 }
 
@@ -2496,7 +2523,7 @@ int SetWindowLongPtr(int hWnd, int nIndex, int dwNewLong) {
 ///   int  Y,
 ///   int  cx,
 ///   int  cy,
-///   UINT uFlags,
+///   UINT uFlags
 /// );
 /// ```
 /// {@category user32}
@@ -2849,10 +2876,10 @@ int WindowFromDC(int hDC) {
 /// );
 /// ```
 /// {@category user32}
-int WindowFromPhysicalPoint(int Point) {
+int WindowFromPhysicalPoint(POINT Point) {
   final _WindowFromPhysicalPoint = _user32.lookupFunction<
-      IntPtr Function(Int64 Point),
-      int Function(int Point)>('WindowFromPhysicalPoint');
+      IntPtr Function(POINT Point),
+      int Function(POINT Point)>('WindowFromPhysicalPoint');
   return _WindowFromPhysicalPoint(Point);
 }
 
@@ -2864,8 +2891,8 @@ int WindowFromPhysicalPoint(int Point) {
 /// );
 /// ```
 /// {@category user32}
-int WindowFromPoint(int Point) {
-  final _WindowFromPoint = _user32.lookupFunction<IntPtr Function(Int64 Point),
-      int Function(int Point)>('WindowFromPoint');
+int WindowFromPoint(POINT Point) {
+  final _WindowFromPoint = _user32.lookupFunction<IntPtr Function(POINT Point),
+      int Function(POINT Point)>('WindowFromPoint');
   return _WindowFromPoint(Point);
 }

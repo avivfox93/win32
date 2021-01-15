@@ -1,6 +1,7 @@
 ## 2.0.0-nullsafety.8
 
 - New APIs:
+  - advapi32: InitiateShutdownW, RegSetValueExW
   - gdi32: AddFontResource, AddFontResourceEx, AngleArc, AnimatePalette, Arc,
     ArcTo, BeginPath, BitBlt, CancelDC, Chord, CloseFigure,
     CreateCompatibleBitmap, CreateCompatibleDC, CreateDIBPatternBrushPt,
@@ -8,7 +9,8 @@
     EndPath, ExtTextOutW, GetDIBits, GetNearestColor, Pie, PolyBezierTo,
     PolyDraw, Polygon, Polyline, PolylineTo, PolyPolygon, PolyPolyline,
     PtInRegion, RectInRegion, RoundRect, SetStretchBltMode, StretchBlt
-  - kernel32: GlobalAlloc, GlobalFree, GlobalLock, GlobalUnlock
+  - kernel32: GlobalAlloc, GlobalFree, GlobalLock, GlobalUnlock,
+    IsWow64Process2, Wow64SuspendThread
   - user32: ClientToScreen, CopyRect, DrawCaption, DrawTextEx, EqualRect,
     ExcludeUpdateRgn, FrameRect, GetDCEx, GetSysColorBrush, GetTabbedTextExtent,
     GetUpdateRect, GetUpdateRgn, GetWindowDC, GetWindowRgnBox, GrayString,
@@ -19,6 +21,7 @@
     ValidateRgn, WindowFromDC
   - Add BITMAP, BITMAPINFOHEADER, BITMAPFILEHEADER, PALETTEENTRY, DRAWTEXTPARAMS
     structs
+- Adds COM tests and exports several COM interfaces that weree missing
 
 ## 2.0.0-nullsafety.7
 

@@ -12,8 +12,9 @@ void main() {
       final mdScope =
           WinmdStore.getScopeForType('Windows.Globalization.Calendar');
 
-      expect(
-          mdScope.typeDefs.length, equals(104)); // at least, on Windows 10 2004
+      // This is 99 on Windows Server 2019, 104 on Windows 10 2004. The exact
+      // number is less critical than that this returns a sane result.
+      expect(mdScope.typeDefs.length, greaterThan(50));
     });
 
     test('Find a specific WinMD token', () {
@@ -21,7 +22,10 @@ void main() {
           WinmdStore.getScopeForType('Windows.Globalization.ICalendarFactory');
 
       final type = mdScope.findTypeDef('Windows.Globalization.Calendar');
-      expect(type.token, equals(0x02000003));
+
+      // The number token ID may change from build to build, but the highest
+      // order byte should always be 0x02
+      expect(type.token & 0x02000000, equals(0x02000000));
     });
 
     test('Get IAsyncInfo methods', () {

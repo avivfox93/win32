@@ -12,6 +12,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 
+import 'callbacks.dart';
 import 'com/combase.dart';
 import 'structs.dart';
 
@@ -96,6 +97,34 @@ int CredWrite(Pointer<CREDENTIAL> Credential, int Flags) {
   return _CredWrite(Credential, Flags);
 }
 
+/// Initiates a shutdown and restart of the specified computer, and
+/// restarts any applications that have been registered for restart.
+///
+/// ```c
+/// DWORD InitiateShutdownW(
+///   LPWSTR lpMachineName,
+///   LPWSTR lpMessage,
+///   DWORD  dwGracePeriod,
+///   DWORD  dwShutdownFlags,
+///   DWORD  dwReason
+/// );
+/// ```
+/// {@category advapi32}
+int InitiateShutdown(Pointer<Utf16> lpMachineName, Pointer<Utf16> lpMessage,
+    int dwGracePeriod, int dwShutdownFlags, int dwReason) {
+  final _InitiateShutdown = _advapi32.lookupFunction<
+      Uint32 Function(Pointer<Utf16> lpMachineName, Pointer<Utf16> lpMessage,
+          Uint32 dwGracePeriod, Uint32 dwShutdownFlags, Uint32 dwReason),
+      int Function(
+          Pointer<Utf16> lpMachineName,
+          Pointer<Utf16> lpMessage,
+          int dwGracePeriod,
+          int dwShutdownFlags,
+          int dwReason)>('InitiateShutdownW');
+  return _InitiateShutdown(
+      lpMachineName, lpMessage, dwGracePeriod, dwShutdownFlags, dwReason);
+}
+
 /// Closes a handle to the specified registry key.
 ///
 /// ```c
@@ -108,6 +137,27 @@ int RegCloseKey(int hKey) {
   final _RegCloseKey = _advapi32.lookupFunction<Int32 Function(IntPtr hKey),
       int Function(int hKey)>('RegCloseKey');
   return _RegCloseKey(hKey);
+}
+
+/// Establishes a connection to a predefined registry key on another
+/// computer.
+///
+/// ```c
+/// LSTATUS RegConnectRegistryW(
+///   LPCWSTR lpMachineName,
+///   HKEY    hKey,
+///   PHKEY   phkResult
+/// );
+/// ```
+/// {@category advapi32}
+int RegConnectRegistry(
+    Pointer<Utf16> lpMachineName, int hKey, Pointer<IntPtr> phkResult) {
+  final _RegConnectRegistry = _advapi32.lookupFunction<
+      Int32 Function(
+          Pointer<Utf16> lpMachineName, IntPtr hKey, Pointer<IntPtr> phkResult),
+      int Function(Pointer<Utf16> lpMachineName, int hKey,
+          Pointer<IntPtr> phkResult)>('RegConnectRegistryW');
+  return _RegConnectRegistry(lpMachineName, hKey, phkResult);
 }
 
 /// Opens the specified registry key. Note that key names are not case
@@ -127,7 +177,7 @@ int RegOpenKeyEx(int hKey, Pointer<Utf16> lpSubKey, int ulOptions,
     int samDesired, Pointer<IntPtr> phkResult) {
   final _RegOpenKeyEx = _advapi32.lookupFunction<
       Int32 Function(IntPtr hKey, Pointer<Utf16> lpSubKey, Uint32 ulOptions,
-          Int32 samDesired, Pointer<IntPtr> phkResult),
+          Uint32 samDesired, Pointer<IntPtr> phkResult),
       int Function(int hKey, Pointer<Utf16> lpSubKey, int ulOptions,
           int samDesired, Pointer<IntPtr> phkResult)>('RegOpenKeyExW');
   return _RegOpenKeyEx(hKey, lpSubKey, ulOptions, samDesired, phkResult);
@@ -173,4 +223,27 @@ int RegQueryValueEx(
           Pointer<Uint32> lpcbData)>('RegQueryValueExW');
   return _RegQueryValueEx(
       hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
+}
+
+/// Sets the data and type of a specified value under a registry key.
+///
+/// ```c
+/// LSTATUS RegSetValueExW(
+///   HKEY       hKey,
+///   LPCWSTR    lpValueName,
+///   DWORD      Reserved,
+///   DWORD      dwType,
+///   const BYTE *lpData,
+///   DWORD      cbData
+/// );
+/// ```
+/// {@category advapi32}
+int RegSetValueEx(int hKey, Pointer<Utf16> lpValueName, int Reserved,
+    int dwType, Pointer<Uint8> lpData, int cbData) {
+  final _RegSetValueEx = _advapi32.lookupFunction<
+      Int32 Function(IntPtr hKey, Pointer<Utf16> lpValueName, Uint32 Reserved,
+          Uint32 dwType, Pointer<Uint8> lpData, Uint32 cbData),
+      int Function(int hKey, Pointer<Utf16> lpValueName, int Reserved,
+          int dwType, Pointer<Uint8> lpData, int cbData)>('RegSetValueExW');
+  return _RegSetValueEx(hKey, lpValueName, Reserved, dwType, lpData, cbData);
 }

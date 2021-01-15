@@ -7,6 +7,7 @@
 
 import 'dart:io';
 
+import 'new_apis.dart';
 import 'shared.dart';
 import 'struct_sizes.dart';
 
@@ -32,7 +33,10 @@ import 'package:test/test.dart';
 
 import 'package:win32/win32.dart';
 
+import 'helpers.dart';
+
 void main() {
+  final windowsBuildNumber = getWindowsBuildNumber();
 ''');
   final libraries = prototypes.values.map((e) => e.dllLibrary).toSet().toList();
 
@@ -49,19 +53,38 @@ void main() {
     for (final proto in libProtos) {
       final apiName = prototypes.keys.firstWhere(
           (k) => prototypes[k]!.neutralApiName == proto.neutralApiName);
-      writer.writeStringSync('''
-      test('Can instantiate ${proto.neutralApiName}', () {
+      final win32Func = win32APIs.where((api) => api.name == apiName).first;
+      final returnFFIType = ffiFromWin32(win32Func.returnType);
+      final returnDartType = dartFromFFI(returnFFIType);
+
+      final test = '''
+      test('Can instantiate ${win32Func.nameWithoutEncoding}', () {
         final $library = DynamicLibrary.open('$library${library == 'bthprops' ? '.cpl' : '.dll'}');
-        final ${proto.neutralApiName} = $library.lookupFunction<\n
-          ${proto.nativeReturn} Function(
-            ${proto.nativeParams.keys.map((param) => '${proto.nativeParams[param]} $param').join(', ')}),
-          ${proto.dartReturn} Function(
-            ${proto.dartParams.keys.map((param) => '${proto.dartParams[param]} $param').join(', ')})>
+        final ${win32Func.nameWithoutEncoding} = $library.lookupFunction<\n
+          $returnFFIType Function(
+            ${win32Func.params.map((param) {
+        final convertedParams = win32Func.convertParamType(param);
+        return '${convertedParams.first} ${convertedParams.last}';
+      }).join(', ')}),
+          $returnDartType Function(
+            ${win32Func.params.map((param) {
+        final convertedParams = win32Func.convertParamType(param);
+        final dartType = dartFromFFI(convertedParams.first);
+        return '$dartType ${convertedParams.last}';
+      }).join(', ')})>
           ('$apiName');
         expect(${proto.neutralApiName}, isA<Function>());
-      });
-      
-''');
+      });''';
+
+      if (versionedAPIs.keys.contains(apiName)) {
+        writer.writeStringSync('''
+        if (windowsBuildNumber >= ${versionedAPIs[apiName]}) {
+          $test
+        }''');
+      } else {
+        writer.writeStringSync(test);
+      }
+      writer.writeStringSync('\n');
       tests++;
     }
     writer.writeStringSync('});\n\n');
